@@ -6,7 +6,7 @@ This module defines all API endpoints for the application.
 
 from app.config import get_config
 import os
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from datetime import datetime
@@ -76,10 +76,11 @@ async def search_participant(
     return result
 
 
-@router.post("/accommodation", response_model=AccommodationResponse, status_code=201)
+@router.post("/accommodation", response_model=AccommodationResponse)
 @limiter.limit("20/minute")
 async def add_accommodation(
     request: Request,
+    response: Response,
     accom_req: AccommodationRequest,
     token: str = Depends(verify_token)
 ):
@@ -99,6 +100,8 @@ async def add_accommodation(
         volunteer_email=volunteer_email
     )
 
+    # Return 409 for duplicates, 201 for success
+    response.status_code = 409 if result.duplicate else 201
     return result
 
 
@@ -138,10 +141,11 @@ async def health_check():
     )
 
 
-@router.post("/events/register", response_model=EventRegistrationResponse, status_code=201)
+@router.post("/events/register", response_model=EventRegistrationResponse)
 @limiter.limit("20/minute")
 async def register_event(
     request: Request,
+    response: Response,
     event_req: EventRegistrationRequest,
     token: str = Depends(verify_token)
 ):
@@ -157,13 +161,16 @@ async def register_event(
         volunteer_email=volunteer_email
     )
 
+    # Return 409 for duplicates, 201 for success
+    response.status_code = 409 if result.duplicate else 201
     return result
 
 
-@router.post("/workshops/register", response_model=WorkshopRegistrationResponse, status_code=201)
+@router.post("/workshops/register", response_model=WorkshopRegistrationResponse)
 @limiter.limit("20/minute")
 async def register_workshop(
     request: Request,
+    response: Response,
     workshop_req: WorkshopRegistrationRequest,
     token: str = Depends(verify_token)
 ):
@@ -179,4 +186,6 @@ async def register_workshop(
         volunteer_email=volunteer_email
     )
 
+    # Return 409 for duplicates, 201 for success
+    response.status_code = 409 if result.duplicate else 201
     return result
