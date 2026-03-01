@@ -274,3 +274,71 @@ class ValidationService:
             if isinstance(data["notes"], str) and len(data["notes"]) > 500:
                 raise ValidationError(
                     "notes", "Notes must not exceed 500 characters")
+
+    def validate_event_data(self, data: Dict[str, Any]) -> None:
+        """
+        Validate complete event registration data.
+
+        Args:
+            data: Dictionary containing event registration data
+
+        Raises:
+            ValidationError: If any validation check fails
+        """
+        # Required fields for event registration
+        required_fields = ["name", "email", "phone", "eventNames"]
+
+        for field in required_fields:
+            if field not in data or not data[field]:
+                raise ValidationError(
+                    field, f"Required field '{field}' is missing or empty")
+
+        # Validate email format
+        self.validate_email(data["email"])
+
+        # Validate text fields
+        self.validate_text_field(
+            "name", data["name"], min_length=1, max_length=200)
+
+        # Validate eventNames is a list with at least one item
+        if not isinstance(data["eventNames"], list) or len(data["eventNames"]) == 0:
+            raise ValidationError(
+                "eventNames", "At least one event must be selected")
+
+        for event_name in data["eventNames"]:
+            self.validate_text_field(
+                "eventName", event_name, min_length=1, max_length=200)
+
+    def validate_workshop_data(self, data: Dict[str, Any]) -> None:
+        """
+        Validate complete workshop registration data.
+
+        Args:
+            data: Dictionary containing workshop registration data
+
+        Raises:
+            ValidationError: If any validation check fails
+        """
+        # Required fields for workshop registration
+        required_fields = ["name", "email", "phone", "workshopNames"]
+
+        for field in required_fields:
+            if field not in data or not data[field]:
+                raise ValidationError(
+                    field, f"Required field '{field}' is missing or empty")
+
+        # Validate email format
+        self.validate_email(data["email"])
+
+        # Validate text fields
+        self.validate_text_field(
+            "name", data["name"], min_length=1, max_length=200)
+
+        # Validate workshopNames is a list with at least one item
+        if not isinstance(data["workshopNames"], list) or len(data["workshopNames"]) == 0:
+            raise ValidationError(
+                "workshopNames", "At least one workshop must be selected")
+
+        for workshop_name in data["workshopNames"]:
+            self.validate_text_field(
+                "workshopName", workshop_name, min_length=1, max_length=200)

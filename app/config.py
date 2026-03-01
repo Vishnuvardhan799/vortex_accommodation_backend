@@ -35,7 +35,10 @@ class Config:
             "GOOGLE_CREDENTIALS_JSON": "Google service account credentials (JSON string)",
             "API_SECRET_KEY": "Secret key for API authentication",
             "ALLOWED_ORIGINS": "Comma-separated list of allowed CORS origins",
-            "REGISTRATION_DATA_PATH": "Path to registration data JSON file"
+            "REGISTRATION_DATA_PATH": "Path to registration data JSON file",
+            "ACCOMMODATION_SHEET_ID": "Google Sheet ID for accommodation data",
+            "EVENTS_SHEET_ID": "Google Sheet ID for events registration",
+            "WORKSHOPS_SHEET_ID": "Google Sheet ID for workshops registration"
         }
 
         missing_vars = []
@@ -43,13 +46,6 @@ class Config:
             value = os.getenv(var_name)
             if not value:
                 missing_vars.append(f"  - {var_name}: {description}")
-
-        # Check that either SHEET_NAME or SHEET_ID is provided
-        sheet_name = os.getenv("SHEET_NAME")
-        sheet_id = os.getenv("SHEET_ID")
-        if not sheet_name and not sheet_id:
-            missing_vars.append(
-                "  - SHEET_NAME or SHEET_ID: Name or ID of the Google Sheet for accommodation data")
 
         if missing_vars:
             error_message = (
@@ -68,8 +64,9 @@ class Config:
         """
         # Google Sheets Configuration
         self.google_credentials_json = os.getenv("GOOGLE_CREDENTIALS_JSON")
-        self.sheet_name = os.getenv("SHEET_NAME")
-        self.sheet_id = os.getenv("SHEET_ID")
+        self.accommodation_sheet_id = os.getenv("ACCOMMODATION_SHEET_ID")
+        self.events_sheet_id = os.getenv("EVENTS_SHEET_ID")
+        self.workshops_sheet_id = os.getenv("WORKSHOPS_SHEET_ID")
 
         # Validate Google credentials JSON format
         try:
@@ -117,10 +114,10 @@ class Config:
         logger.info("Configuration loaded successfully:")
         logger.info(f"  - Environment: {self.environment}")
         logger.info(f"  - Log Level: {self.log_level}")
-        if self.sheet_id:
-            logger.info(f"  - Sheet ID: {self.sheet_id}")
-        if self.sheet_name:
-            logger.info(f"  - Sheet Name: {self.sheet_name}")
+        logger.info(
+            f"  - Accommodation Sheet ID: {self.accommodation_sheet_id}")
+        logger.info(f"  - Events Sheet ID: {self.events_sheet_id}")
+        logger.info(f"  - Workshops Sheet ID: {self.workshops_sheet_id}")
         logger.info(f"  - Registration Data: {self.registration_data_path}")
         logger.info(f"  - Allowed Origins: {', '.join(self.allowed_origins)}")
 

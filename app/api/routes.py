@@ -16,11 +16,17 @@ from app.models.schemas import (
     SearchResponse,
     AccommodationRequest,
     AccommodationResponse,
+    EventRegistrationRequest,
+    EventRegistrationResponse,
+    WorkshopRegistrationRequest,
+    WorkshopRegistrationResponse,
     HealthResponse
 )
 from app.middleware import verify_token
 from app.services.search_service import SearchService
 from app.services.accommodation_service import AccommodationService
+from app.services.event_service import EventService
+from app.services.workshop_service import WorkshopService
 from app.repositories.registration_repository import RegistrationRepository
 from app.repositories.sheets_repository import SheetsRepository
 from app.services.validation_service import ValidationService
@@ -39,13 +45,17 @@ config = get_config()
 registration_repo = RegistrationRepository(config.registration_data_path)
 sheets_repo = SheetsRepository(
     credentials_path=config.google_credentials_json,
-    sheet_name=config.sheet_name
+    accommodation_sheet_id=config.accommodation_sheet_id,
+    events_sheet_id=config.events_sheet_id,
+    workshops_sheet_id=config.workshops_sheet_id
 )
 
 # Initialize services
 validation_service = ValidationService()
 search_service = SearchService(registration_repo, sheets_repo)
 accommodation_service = AccommodationService(sheets_repo, validation_service)
+event_service = EventService(sheets_repo, validation_service)
+workshop_service = WorkshopService(sheets_repo, validation_service)
 
 
 @router.post("/search", response_model=SearchResponse)
@@ -127,4 +137,49 @@ async def health_check():
         timestamp=datetime.utcnow(),
         services=services_status
     )
-    
+
+
+@router.post("/events/register", response_model=EventRegistrationResponse, status_code=201)
+@limiter.limit("20/minute")
+async def register_event(
+    request: Request,
+    event_req: EventRegistrationRequest,
+    token: str = Depends(verify_token)
+):
+    """
+    Register participant for an event.
+
+    Rate limit: 20 requests per minute per IP
+    """
+    volunteer_email = "volunteer@vortex2026.com"
+
+    result = await event_service.create_event_registration(
+        data=event_req,
+        volunteer_email=volunteer_email,
+        force=event_req.force
+    )
+
+    return result
+
+
+@router.post("/workshops/register", response_model=WorkshopRegistrationResponse, status_code=201)
+@limiter.limit("20/minute")
+async def register_workshop(
+    request: Request,
+    workshop_req: WorkshopRegistrationRequest,
+    token: str = Depends(verify_token)
+):
+    """
+    Register participant for a workshop.
+
+    Rate limit: 20 requests per minute per IP
+    """
+    volunteer_email = "volunteer@vortex2026.com"
+
+    result = await workshop_service.create_workshop_registration(
+        data=workshop_req,
+        volunteer_email=volunteer_email,
+        force=workshop_req.force
+    )
+
+    return result

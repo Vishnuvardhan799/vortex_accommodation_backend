@@ -322,3 +322,105 @@ class HealthResponse(BaseModel):
             }
         }
     }
+
+
+class EventRegistrationRequest(BaseModel):
+    """
+    Model for event registration requests.
+    """
+    name: str = Field(min_length=1, max_length=200)
+    email: EmailStr
+    phone: str = Field(min_length=10, max_length=15,
+                       pattern=r'^\+?[0-9\s\-\(\)]+$')
+    eventNames: List[str] = Field(min_items=1, max_items=20)
+    teamName: Optional[str] = Field(default=None, max_length=200)
+    paymentStatus: Literal['Paid', 'Pending',
+                           'Waived'] = Field(default='Pending')
+    notes: Optional[str] = Field(default=None, max_length=500)
+    force: bool = Field(default=False)
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "name": "John Doe",
+                "email": "participant@example.com",
+                "phone": "+91 9876543210",
+                "eventNames": ["Tech Talk", "Hackathon"],
+                "teamName": "Team Alpha",
+                "paymentStatus": "Paid",
+                "notes": "First time participant",
+                "force": False
+            }
+        }
+    }
+
+
+class EventRegistrationResponse(BaseModel):
+    """
+    Model for event registration responses.
+    """
+    success: bool
+    message: str
+    entry: Optional[dict] = None
+    duplicate: bool = Field(default=False)
+    existingEntry: Optional[dict] = None
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "success": True,
+                "message": "Event registration created successfully",
+                "duplicate": False
+            }
+        }
+    }
+
+
+class WorkshopRegistrationRequest(BaseModel):
+    """
+    Model for workshop registration requests.
+    """
+    name: str = Field(min_length=1, max_length=200)
+    email: EmailStr
+    phone: str = Field(min_length=10, max_length=15,
+                       pattern=r'^\+?[0-9\s\-\(\)]+$')
+    workshopNames: List[str] = Field(min_items=1, max_items=20)
+    paymentStatus: Literal['Paid', 'Pending',
+                           'Waived'] = Field(default='Pending')
+    notes: Optional[str] = Field(default=None, max_length=500)
+    force: bool = Field(default=False)
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "name": "John Doe",
+                "email": "participant@example.com",
+                "phone": "+91 9876543210",
+                "workshopNames": ["AI Workshop", "Web Dev Workshop"],
+                "paymentStatus": "Paid",
+                "notes": "Interested in advanced topics",
+                "force": False
+            }
+        }
+    }
+
+
+class WorkshopRegistrationResponse(BaseModel):
+    """
+    Model for workshop registration responses.
+    """
+    success: bool
+    message: str
+    entry: Optional[dict] = None
+    duplicate: bool = Field(default=False)
+    existingEntry: Optional[dict] = None
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "success": True,
+                "message": "Workshop registration created successfully",
+                "duplicate": False
+            }
+        }
+    }

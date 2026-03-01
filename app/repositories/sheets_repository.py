@@ -2,7 +2,7 @@
 SheetsRepository for Google Sheets integration.
 
 This module provides the repository layer for interacting with Google Sheets
-to store and retrieve accommodation entries.
+to store and retrieve accommodation, event, and workshop entries.
 
 Validates: Requirements 5.1, 5.2, 5.3, 5.4, 5.5
 """
@@ -11,7 +11,7 @@ import json
 import logging
 import os
 import time
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Literal
 from datetime import datetime
 
 import gspread
@@ -22,6 +22,8 @@ from app.models import AccommodationEntry
 
 
 logger = logging.getLogger(__name__)
+
+SheetType = Literal['accommodation', 'events', 'workshops']
 
 
 class SheetsAPIError(Exception):
@@ -36,28 +38,35 @@ class SheetsAPIError(Exception):
 
 class SheetsRepository:
     """
-    Repository for Google Sheets operations.
+    Repository for Google Sheets operations across multiple sheets.
 
     Implements:
     - Service account authentication (Requirement 5.1)
     - Connection pooling for gspread client (Requirement 5.5)
     - Caching with 60s TTL (Requirement 5.2)
     - Error handling for Google Sheets API errors (Requirement 5.4)
-    - Accommodation entry operations (Requirements 5.3)
+    - Multi-sheet support for accommodation, events, and workshops
     """
 
     # Class-level client for connection pooling
     _client: Optional[gspread.Client] = None
     _client_initialized: bool = False
 
-    def __init__(self, credentials_path: Optional[str] = None, sheet_name: Optional[str] = None, sheet_id: Optional[str] = None):
+    def __init__(
+        self,
+        credentials_path: Optional[str] = None,
+        accommodation_sheet_id: Optional[str] = None,
+        events_sheet_id: Optional[str] = None,
+        workshops_sheet_id: Optional[str] = None
+    ):
         """
         Initialize SheetsRepository with Google Sheets credentials.
 
         Args:
             credentials_path: Path to service account JSON or JSON string
-            sheet_name: Name of the Google Sheet to access
-            sheet_id: ID of the Google Sheet to access (alternative to sheet_name)
+            accommodation_sheet_id: ID of the accommodation Google Sheet
+            events_sheet_id: ID of the events Google Sheet
+            workshops_sheet_id: ID of the workshops Google Sheet
 
         Raises:
             ValueError: If required environment variables are missing
@@ -66,50 +75,74 @@ class SheetsRepository:
         # Load configuration from environment if not provided
         self.credentials_path = credentials_path or os.getenv(
             "GOOGLE_CREDENTIALS_JSON")
-        self.sheet_name = sheet_name or os.getenv("SHEET_NAME")
-        self.sheet_id = sheet_id or os.getenv("SHEET_ID")
+        self.accommodation_sheet_id = accommodation_sheet_id or os.getenv(
+            "ACCOMMODATION_SHEET_ID")
+        self.events_sheet_id = events_sheet_id or os.getenv("EVENTS_SHEET_ID")
+        self.workshops_sheet_id = workshops_sheet_id or os.getenv(
+            "WORKSHOPS_SHEET_ID")
 
         if not self.credentials_path:
             raise ValueError(
                 "GOOGLE_CREDENTIALS_JSON environment variable not set")
-        if not self.sheet_name and not self.sheet_id:
+        if not self.accommodation_sheet_id:
             raise ValueError(
-                "Either SHEET_NAME or SHEET_ID environment variable must be set")
+                "ACCOMMODATION_SHEET_ID environment variable not set")
+        if not self.events_sheet_id:
+            raise ValueError("EVENTS_SHEET_ID environment variable not set")
+        if not self.workshops_sheet_id:
+            raise ValueError("WORKSHOPS_SHEET_ID environment variable not set")
 
         # Initialize client (with connection pooling)
         self.client = self._get_or_create_client()
 
-        # Open the sheet (prefer sheet_id if provided)
-        try:
-            if self.sheet_id:
-                self.spreadsheet = self.client.open_by_key(self.sheet_id)
-                logger.info(
-                    f"Successfully connected to Google Sheet by ID: {self.sheet_id}")
-            else:
-                self.spreadsheet = self.client.open(self.sheet_name)
-                logger.info(
-                    f"Successfully connected to Google Sheet: {self.sheet_name}")
-            self.sheet = self.spreadsheet.sheet1
-        except SpreadsheetNotFound:
-            identifier = self.sheet_id if self.sheet_id else self.sheet_name
-            logger.error(f"Spreadsheet not found: {identifier}")
-            raise SheetsAPIError(
-                "sheet_access", SpreadsheetNotFound(identifier))
-        except Exception as e:
-            logger.error(f"Failed to open spreadsheet: {e}")
-            raise SheetsAPIError("sheet_access", e)
+        # Open all sheets
+        self.sheets: Dict[SheetType, Any] = {}
+        self._open_sheets()
 
-        # Cache for accommodation data
-        self._cache: Optional[list] = None
-        self._cache_timestamp: Optional[float] = None
+        # Cache for each sheet type
+        self._caches: Dict[SheetType, Optional[list]] = {
+            'accommodation': None,
+            'events': None,
+            'workshops': None
+        }
+        self._cache_timestamps: Dict[SheetType, Optional[float]] = {
+            'accommodation': None,
+            'events': None,
+            'workshops': None
+        }
         self._cache_ttl: int = 60  # 60 seconds TTL
+
+    def _open_sheets(self) -> None:
+        """
+        Open all three Google Sheets.
+
+        Raises:
+            SheetsAPIError: If sheet access fails
+        """
+        sheet_configs = {
+            'accommodation': self.accommodation_sheet_id,
+            'events': self.events_sheet_id,
+            'workshops': self.workshops_sheet_id
+        }
+
+        for sheet_type, sheet_id in sheet_configs.items():
+            try:
+                spreadsheet = self.client.open_by_key(sheet_id)
+                self.sheets[sheet_type] = spreadsheet.sheet1
+                logger.info(
+                    f"Successfully connected to {sheet_type} sheet: {sheet_id}")
+            except SpreadsheetNotFound:
+                logger.error(
+                    f"{sheet_type.capitalize()} spreadsheet not found: {sheet_id}")
+                raise SheetsAPIError(
+                    "sheet_access", SpreadsheetNotFound(sheet_id))
+            except Exception as e:
+                logger.error(f"Failed to open {sheet_type} spreadsheet: {e}")
+                raise SheetsAPIError("sheet_access", e)
 
     def _get_or_create_client(self) -> gspread.Client:
         """
         Get or create gspread client with connection pooling.
-
-        Implements connection pooling by reusing the same client instance
-        across all SheetsRepository instances.
 
         Returns:
             gspread.Client: Authenticated gspread client
@@ -117,7 +150,6 @@ class SheetsRepository:
         Raises:
             SheetsAPIError: If authentication fails
         """
-        # Use class-level client for connection pooling
         if not SheetsRepository._client_initialized:
             try:
                 credentials = self._load_credentials()
@@ -135,8 +167,6 @@ class SheetsRepository:
         """
         Load Google service account credentials.
 
-        Supports both file path and JSON string from environment variable.
-
         Returns:
             Credentials: Google service account credentials
 
@@ -149,16 +179,13 @@ class SheetsRepository:
         ]
 
         try:
-            # Try to parse as JSON string first (for environment variable)
             if self.credentials_path.strip().startswith('{'):
                 creds_dict = json.loads(self.credentials_path)
                 credentials = Credentials.from_service_account_info(
                     creds_dict, scopes=scopes)
             else:
-                # Treat as file path
                 credentials = Credentials.from_service_account_file(
-                    self.credentials_path,
-                    scopes=scopes
+                    self.credentials_path, scopes=scopes
                 )
             return credentials
         except json.JSONDecodeError as e:
@@ -166,45 +193,53 @@ class SheetsRepository:
         except Exception as e:
             raise ValueError(f"Failed to load credentials: {e}")
 
-    def _is_cache_stale(self) -> bool:
+    def _is_cache_stale(self, sheet_type: SheetType) -> bool:
         """
-        Check if the cache is stale and needs refresh.
+        Check if the cache is stale for a specific sheet type.
+
+        Args:
+            sheet_type: Type of sheet to check
 
         Returns:
             bool: True if cache is stale or doesn't exist
         """
-        if self._cache is None or self._cache_timestamp is None:
+        cache = self._caches.get(sheet_type)
+        timestamp = self._cache_timestamps.get(sheet_type)
+
+        if cache is None or timestamp is None:
             return True
 
-        elapsed = time.time() - self._cache_timestamp
+        elapsed = time.time() - timestamp
         return elapsed > self._cache_ttl
 
-    def _refresh_cache(self) -> None:
+    def _refresh_cache(self, sheet_type: SheetType) -> None:
         """
-        Refresh the accommodation data cache.
+        Refresh the cache for a specific sheet type.
 
-        Reads all records from the sheet and updates the cache.
+        Args:
+            sheet_type: Type of sheet to refresh
 
         Raises:
             SheetsAPIError: If reading from sheet fails
         """
         try:
-            self._cache = self.sheet.get_all_records()
-            self._cache_timestamp = time.time()
-            logger.debug(f"Cache refreshed with {len(self._cache)} records")
+            sheet = self.sheets[sheet_type]
+            self._caches[sheet_type] = sheet.get_all_records()
+            self._cache_timestamps[sheet_type] = time.time()
+            logger.debug(
+                f"{sheet_type.capitalize()} cache refreshed with {len(self._caches[sheet_type])} records")
         except APIError as e:
             logger.error(
-                f"Google Sheets API error while refreshing cache: {e}")
+                f"Google Sheets API error while refreshing {sheet_type} cache: {e}")
             raise SheetsAPIError("get_all_records", e)
         except Exception as e:
-            logger.error(f"Unexpected error while refreshing cache: {e}")
+            logger.error(
+                f"Unexpected error while refreshing {sheet_type} cache: {e}")
             raise SheetsAPIError("get_all_records", e)
 
     async def find_accommodation(self, email: str) -> Optional[Dict[str, Any]]:
         """
         Find accommodation entry by email with caching.
-
-        Implements 60-second TTL caching to reduce API calls.
 
         Args:
             email: Email address to search for
@@ -215,26 +250,66 @@ class SheetsRepository:
         Raises:
             SheetsAPIError: If reading from sheet fails
         """
-        # Refresh cache if stale
-        if self._is_cache_stale():
-            self._refresh_cache()
+        return await self._find_entry('accommodation', email)
 
-        # Search in cached data (case-insensitive)
+    async def find_event_registration(self, email: str) -> Optional[Dict[str, Any]]:
+        """
+        Find event registration by email with caching.
+
+        Args:
+            email: Email address to search for
+
+        Returns:
+            Optional[Dict[str, Any]]: Event registration if found, None otherwise
+
+        Raises:
+            SheetsAPIError: If reading from sheet fails
+        """
+        return await self._find_entry('events', email)
+
+    async def find_workshop_registration(self, email: str) -> Optional[Dict[str, Any]]:
+        """
+        Find workshop registration by email with caching.
+
+        Args:
+            email: Email address to search for
+
+        Returns:
+            Optional[Dict[str, Any]]: Workshop registration if found, None otherwise
+
+        Raises:
+            SheetsAPIError: If reading from sheet fails
+        """
+        return await self._find_entry('workshops', email)
+
+    async def _find_entry(self, sheet_type: SheetType, email: str) -> Optional[Dict[str, Any]]:
+        """
+        Generic method to find entry by email in any sheet type.
+
+        Args:
+            sheet_type: Type of sheet to search
+            email: Email address to search for
+
+        Returns:
+            Optional[Dict[str, Any]]: Entry if found, None otherwise
+        """
+        if self._is_cache_stale(sheet_type):
+            self._refresh_cache(sheet_type)
+
         email_lower = email.lower()
-        for record in self._cache:
+        cache = self._caches[sheet_type]
+
+        for record in cache:
             if record.get('Email', '').lower() == email_lower:
-                logger.debug(f"Found accommodation for email: {email}")
+                logger.debug(f"Found {sheet_type} entry for email: {email}")
                 return record
 
-        logger.debug(f"No accommodation found for email: {email}")
+        logger.debug(f"No {sheet_type} entry found for email: {email}")
         return None
 
     async def append_accommodation(self, entry: AccommodationEntry) -> None:
         """
         Append new accommodation entry to the sheet.
-
-        Converts AccommodationEntry to row format and appends to sheet.
-        Invalidates cache after successful append.
 
         Args:
             entry: AccommodationEntry to append
@@ -242,39 +317,74 @@ class SheetsRepository:
         Raises:
             SheetsAPIError: If appending to sheet fails
         """
+        row = self._accommodation_entry_to_row(entry)
+        await self._append_row('accommodation', row)
+        logger.info(
+            f"Successfully appended accommodation entry for: {entry.email}")
+
+    async def append_event_registration(self, entry: Dict[str, Any]) -> None:
+        """
+        Append new event registration to the sheet.
+
+        Args:
+            entry: Event registration data
+
+        Raises:
+            SheetsAPIError: If appending to sheet fails
+        """
+        row = self._event_entry_to_row(entry)
+        await self._append_row('events', row)
+        logger.info(
+            f"Successfully appended event registration for: {entry['email']}")
+
+    async def append_workshop_registration(self, entry: Dict[str, Any]) -> None:
+        """
+        Append new workshop registration to the sheet.
+
+        Args:
+            entry: Workshop registration data
+
+        Raises:
+            SheetsAPIError: If appending to sheet fails
+        """
+        row = self._workshop_entry_to_row(entry)
+        await self._append_row('workshops', row)
+        logger.info(
+            f"Successfully appended workshop registration for: {entry['email']}")
+
+    async def _append_row(self, sheet_type: SheetType, row: list) -> None:
+        """
+        Generic method to append a row to any sheet type.
+
+        Args:
+            sheet_type: Type of sheet to append to
+            row: Row data to append
+
+        Raises:
+            SheetsAPIError: If appending to sheet fails
+        """
         try:
-            # Convert entry to row format
-            row = self._entry_to_row(entry)
+            sheet = self.sheets[sheet_type]
+            sheet.append_row(row)
 
-            # Append to sheet
-            self.sheet.append_row(row)
-            logger.info(
-                f"Successfully appended accommodation entry for: {entry.email}")
-
-            # Invalidate cache to force refresh on next read
-            self._cache = None
-            self._cache_timestamp = None
+            # Invalidate cache
+            self._caches[sheet_type] = None
+            self._cache_timestamps[sheet_type] = None
 
         except APIError as e:
-            logger.error(f"Google Sheets API error while appending row: {e}")
+            logger.error(
+                f"Google Sheets API error while appending to {sheet_type}: {e}")
             raise SheetsAPIError("append_row", e)
         except Exception as e:
             logger.error(
-                f"Unexpected error while appending accommodation: {e}")
+                f"Unexpected error while appending to {sheet_type}: {e}")
             raise SheetsAPIError("append_row", e)
 
-    def _entry_to_row(self, entry: AccommodationEntry) -> list:
+    def _accommodation_entry_to_row(self, entry: AccommodationEntry) -> list:
         """
         Convert AccommodationEntry to sheet row format.
 
-        Row structure (Requirement 5.3):
-        [Timestamp, Name, Email, Phone, College, From Date, To Date, Accommodation Type, Notes, Entered By]
-
-        Args:
-            entry: AccommodationEntry to convert
-
-        Returns:
-            list: Row data in correct column order
+        Row: [Timestamp, Name, Email, Phone, College, From Date, To Date, Type, Notes, Entered By]
         """
         return [
             entry.timestamp.isoformat(),
@@ -289,18 +399,59 @@ class SheetsRepository:
             entry.enteredBy
         ]
 
+    def _event_entry_to_row(self, entry: Dict[str, Any]) -> list:
+        """
+        Convert event registration to sheet row format.
+
+        Row: [Timestamp, Name, Email, Phone, Event Names, Team Name, Payment Status, Notes, Entered By]
+        """
+        # Join event names with comma separator
+        event_names_str = ", ".join(entry['eventNames']) if isinstance(
+            entry['eventNames'], list) else str(entry['eventNames'])
+
+        return [
+            entry['timestamp'].isoformat(),
+            entry['name'],
+            entry['email'],
+            entry['phone'],
+            event_names_str,
+            entry.get('teamName', ''),
+            entry.get('paymentStatus', 'Pending'),
+            entry.get('notes', ''),
+            entry['enteredBy']
+        ]
+
+    def _workshop_entry_to_row(self, entry: Dict[str, Any]) -> list:
+        """
+        Convert workshop registration to sheet row format.
+
+        Row: [Timestamp, Name, Email, Phone, Workshop Names, Payment Status, Notes, Entered By]
+        """
+        # Join workshop names with comma separator
+        workshop_names_str = ", ".join(entry['workshopNames']) if isinstance(
+            entry['workshopNames'], list) else str(entry['workshopNames'])
+
+        return [
+            entry['timestamp'].isoformat(),
+            entry['name'],
+            entry['email'],
+            entry['phone'],
+            workshop_names_str,
+            entry.get('paymentStatus', 'Pending'),
+            entry.get('notes', ''),
+            entry['enteredBy']
+        ]
+
     def verify_connection(self) -> bool:
         """
-        Verify connection to Google Sheets.
-
-        Used for health checks (Requirement 5.2).
+        Verify connection to all Google Sheets.
 
         Returns:
-            bool: True if connection is successful, False otherwise
+            bool: True if all connections are successful
         """
         try:
-            # Try to access sheet title
-            _ = self.sheet.title
+            for sheet_type, sheet in self.sheets.items():
+                _ = sheet.title
             return True
         except Exception as e:
             logger.error(f"Failed to verify Google Sheets connection: {e}")
@@ -311,6 +462,6 @@ class SheetsRepository:
         Async wrapper for verify_connection.
 
         Returns:
-            bool: True if connection is successful, False otherwise
+            bool: True if connection is successful
         """
         return self.verify_connection()

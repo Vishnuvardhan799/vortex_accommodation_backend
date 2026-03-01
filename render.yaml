@@ -15,20 +15,20 @@ services:
         value: 3.11.0
       - key: GOOGLE_CREDENTIALS_JSON
         sync: false # Set in Render dashboard
-      - key: SHEET_NAME
+      - key: ACCOMMODATION_SHEET_ID
+        sync: false # Set in Render dashboard
+      - key: EVENTS_SHEET_ID
+        sync: false # Set in Render dashboard
+      - key: WORKSHOPS_SHEET_ID
         sync: false # Set in Render dashboard
       - key: API_SECRET_KEY
         generateValue: true # Auto-generate secure key
       - key: ALLOWED_ORIGINS
         sync: false # Set in Render dashboard (e.g., https://your-frontend.vercel.app)
       - key: REGISTRATION_DATA_PATH
-        value: data/registration_data.json
+        value: data/sample_registration_data.json
       - key: ENVIRONMENT
         value: production
       - key: LOG_LEVEL
         value: INFO
     autoDeploy: true
-    disk:
-      name: data
-      mountPath: /app/data
-      sizeGB: 1
