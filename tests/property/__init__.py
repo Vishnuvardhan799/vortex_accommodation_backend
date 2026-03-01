@@ -1,0 +1,3 @@
+"""
+Property-based tests for the Vortex 2026 Accommodation System.
+"""
