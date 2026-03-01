@@ -52,6 +52,7 @@ Thumbs.db
 
 # Data files (if sensitive)
 data/*.json
+!data/sample_registration_data.json
 credentials/*.json
 
 # Type checking
