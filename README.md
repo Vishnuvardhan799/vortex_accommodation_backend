@@ -2,13 +2,28 @@
 
 FastAPI backend service for the Vortex 2026 Accommodation & Registration Check System.
 
+A lightweight, high-performance API for managing participant registration and accommodation data during Vortex 2026 (March 6-8, NIT Trichy).
+
 ## Features
 
-- Participant search by email
-- Accommodation entry management
-- Google Sheets integration
-- Rate limiting and authentication
-- Real-time data validation
+- Fast participant search by email (sub-second response)
+- Real-time accommodation management via Google Sheets
+- Event and workshop registration tracking
+- Duplicate detection with confirmation workflow
+- Rate limiting (100 requests/minute per IP)
+- API key authentication
+- Comprehensive error handling
+- CORS support for frontend integration
+- Health check endpoint for monitoring
+
+## Tech Stack
+
+- FastAPI (Python 3.11+) with async/await
+- Uvicorn ASGI server
+- Pydantic v2 for validation
+- Google Sheets API (gspread, google-auth)
+- slowapi for rate limiting
+- pytest + hypothesis for testing
 
 ## Prerequisites
 
@@ -76,20 +91,53 @@ Once the server is running, visit:
 ```
 backend/
 ├── app/
-│   ├── __init__.py
-│   ├── main.py              # Application entry point
-│   ├── models/              # Pydantic data models
-│   ├── services/            # Business logic
-│   ├── repositories/        # Data access layer
-│   └── api/                 # API endpoints
-├── requirements.txt         # Python dependencies
-├── .env.example            # Environment variables template
-└── README.md               # This file
+│   ├── main.py                 # Application entry point, middleware
+│   ├── config.py               # Environment variable validation
+│   ├── exceptions.py           # Custom exception classes
+│   ├── middleware.py           # Authentication middleware
+│   ├── utils.py                # Shared utilities
+│   ├── api/
+│   │   └── routes.py           # API endpoint definitions
+│   ├── models/
+│   │   └── schemas.py          # Pydantic request/response models
+│   ├── services/               # Business logic layer
+│   │   ├── search_service.py
+│   │   ├── accommodation_service.py
+│   │   └── validation_service.py
+│   └── repositories/           # Data access layer
+│       ├── registration_repository.py
+│       └── sheets_repository.py
+├── tests/
+│   ├── unit/                   # Unit tests
+│   ├── property/               # Property-based tests (hypothesis)
+│   └── integration/            # Integration tests
+├── data/                       # Registration data (JSON)
+├── docs/                       # API and deployment documentation
+├── scripts/                    # Setup utilities
+├── requirements.txt            # Python dependencies
+├── pytest.ini                  # Pytest configuration
+├── .env.example                # Environment variables template
+└── README.md                   # This file
 ```
+
+## API Endpoints
+
+| Method | Endpoint                    | Description                    | Auth Required |
+| ------ | --------------------------- | ------------------------------ | ------------- |
+| GET    | `/api/health`               | Health check                   | No            |
+| GET    | `/api/search`               | Search participant by email    | Yes           |
+| POST   | `/api/accommodation`        | Add accommodation entry        | Yes           |
+| POST   | `/api/accommodation/verify` | Verify duplicate accommodation | Yes           |
+| POST   | `/api/events/register`      | Register for event/workshop    | Yes           |
+
+All authenticated endpoints require `X-API-Key` header.
 
 ## Testing
 
-Run tests with pytest:
+The project uses a dual testing approach:
+
+- Unit tests for specific examples and edge cases
+- Property-based tests for universal properties across random inputs
 
 ```bash
 # Run all tests
@@ -99,28 +147,29 @@ pytest
 pytest --cov=app --cov-report=html
 
 # Run specific test types
-pytest tests/unit
-pytest tests/property
-pytest tests/integration
+pytest tests/unit              # Unit tests only
+pytest tests/property          # Property-based tests only
+pytest tests/integration       # Integration tests only
+
+# Run with verbose output
+pytest -v
+
+# Run specific test file
+pytest tests/unit/test_search_service.py
 ```
 
 ## Development
 
-### Code Formatting
+### Code Quality Tools
 
 ```bash
+# Format code
 black app/
-```
 
-### Linting
-
-```bash
+# Lint code
 flake8 app/
-```
 
-### Type Checking
-
-```bash
+# Type check
 mypy app/
 ```
 
@@ -144,6 +193,40 @@ mypy app/
 | `REGISTRATION_DATA_PATH`  | Path to registration data JSON         | Yes      | -           |
 | `ENVIRONMENT`             | Environment (development/production)   | No       | development |
 | `LOG_LEVEL`               | Logging level                          | No       | INFO        |
+
+## Performance Targets
+
+- Search response: <1 second
+- Accommodation creation: <2 seconds
+- Concurrent users: 50+
+- Participant records: 10,000+
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Google Sheets API errors**
+   - Verify service account has access to the sheet
+   - Check that `GOOGLE_CREDENTIALS_JSON` is valid JSON
+   - Ensure Sheets API is enabled in Google Cloud Console
+
+2. **CORS errors**
+   - Add your frontend URL to `ALLOWED_ORIGINS`
+   - Ensure URLs don't have trailing slashes
+
+3. **Rate limiting**
+   - Default: 100 requests/minute per IP
+   - Adjust in `app/main.py` if needed
+
+4. **Import errors**
+   - Ensure virtual environment is activated
+   - Run `pip install -r requirements.txt`
+
+## Additional Documentation
+
+- [API Documentation](docs/API_DOCUMENTATION.md)
+- [Google Sheets Setup Guide](docs/GOOGLE_SHEETS_SETUP.md)
+- [Deployment Guide](docs/DEPLOYMENT_GUIDE.md)
 
 ## License
 
