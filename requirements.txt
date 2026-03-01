@@ -3,8 +3,7 @@ fastapi==0.109.0
 uvicorn[standard]==0.27.0
 
 # Data Validation
-pydantic==2.10.5
-pydantic-core==2.27.2
+pydantic>=2.5.0,<3.0.0
 email-validator==2.1.0
 
 # Google Sheets Integration
