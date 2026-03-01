@@ -36,8 +36,7 @@ class WorkshopService:
     async def create_workshop_registration(
         self,
         data: WorkshopRegistrationRequest,
-        volunteer_email: str,
-        force: bool = False
+        volunteer_email: str
     ) -> WorkshopRegistrationResponse:
         """
         Create new workshop registration with duplicate checking.
@@ -45,7 +44,6 @@ class WorkshopService:
         Args:
             data: WorkshopRegistrationRequest containing entry data
             volunteer_email: Email of the volunteer creating the entry
-            force: If True, bypass duplicate check and create anyway
 
         Returns:
             WorkshopRegistrationResponse indicating success or duplicate warning
@@ -66,21 +64,20 @@ class WorkshopService:
             logger.debug(
                 f"Validation passed for workshop registration: {data.email}")
 
-            # Check for duplicates (unless force flag is set)
-            if not force:
-                existing = await self.sheets_repo.find_workshop_registration(data.email)
-                if existing:
-                    logger.info(
-                        f"Duplicate workshop registration detected for: {data.email}")
-                    return WorkshopRegistrationResponse(
-                        success=False,
-                        message="A workshop registration already exists for this email",
-                        duplicate=True,
-                        existingEntry={
-                            "name": existing.get('Name'),
-                            "workshopNames": existing.get('Workshop Names')
-                        }
-                    )
+            # Check for duplicates - block if email already registered
+            existing = await self.sheets_repo.find_workshop_registration(data.email)
+            if existing:
+                logger.info(
+                    f"Email already registered for workshops: {data.email}")
+                return WorkshopRegistrationResponse(
+                    success=False,
+                    message="This email is already registered for workshops",
+                    duplicate=True,
+                    existingEntry={
+                        "name": existing.get('Name'),
+                        "workshopNames": existing.get('Workshop Names')
+                    }
+                )
 
             # Prepare entry with automatic field population
             entry = self._prepare_entry(data, volunteer_email)

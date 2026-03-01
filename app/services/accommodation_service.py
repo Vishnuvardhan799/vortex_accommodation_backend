@@ -50,22 +50,20 @@ class AccommodationService:
     async def create_accommodation(
         self,
         data: AccommodationRequest,
-        volunteer_email: str,
-        force: bool = False
+        volunteer_email: str
     ) -> AccommodationResponse:
         """
         Create new accommodation entry with duplicate checking.
 
         This method:
         1. Validates input data
-        2. Checks for duplicate entries (unless force=True)
+        2. Checks for duplicate entries (blocks if email already registered)
         3. Adds timestamp and volunteer email automatically
         4. Appends entry to Google Sheets
 
         Args:
             data: AccommodationRequest containing entry data
             volunteer_email: Email of the volunteer creating the entry
-            force: If True, bypass duplicate check and create anyway
 
         Returns:
             AccommodationResponse indicating success or duplicate warning
@@ -91,24 +89,23 @@ class AccommodationService:
             logger.debug(
                 f"Validation passed for accommodation entry: {data.email}")
 
-            # Check for duplicates (unless force flag is set)
-            if not force:
-                existing = await self.sheets_repo.find_accommodation(data.email)
-                if existing:
-                    logger.info(
-                        f"Duplicate accommodation entry detected for: {data.email}"
-                    )
-                    return AccommodationResponse(
-                        success=False,
-                        message="An accommodation entry already exists for this email",
-                        duplicate=True,
-                        existingEntry={
-                            "name": existing.get('Name'),
-                            "fromDate": existing.get('From Date'),
-                            "toDate": existing.get('To Date'),
-                            "accommodationType": existing.get('Accommodation Type')
-                        }
-                    )
+            # Check for duplicates - block if email already has accommodation
+            existing = await self.sheets_repo.find_accommodation(data.email)
+            if existing:
+                logger.info(
+                    f"Email already registered for accommodation: {data.email}"
+                )
+                return AccommodationResponse(
+                    success=False,
+                    message="This email is already registered for accommodation",
+                    duplicate=True,
+                    existingEntry={
+                        "name": existing.get('Name'),
+                        "fromDate": existing.get('From Date'),
+                        "toDate": existing.get('To Date'),
+                        "accommodationType": existing.get('Accommodation Type')
+                    }
+                )
 
             # Prepare entry with automatic field population
             entry = self._prepare_entry(data, volunteer_email)

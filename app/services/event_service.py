@@ -36,8 +36,7 @@ class EventService:
     async def create_event_registration(
         self,
         data: EventRegistrationRequest,
-        volunteer_email: str,
-        force: bool = False
+        volunteer_email: str
     ) -> EventRegistrationResponse:
         """
         Create new event registration with duplicate checking.
@@ -45,7 +44,6 @@ class EventService:
         Args:
             data: EventRegistrationRequest containing entry data
             volunteer_email: Email of the volunteer creating the entry
-            force: If True, bypass duplicate check and create anyway
 
         Returns:
             EventRegistrationResponse indicating success or duplicate warning
@@ -66,22 +64,21 @@ class EventService:
             logger.debug(
                 f"Validation passed for event registration: {data.email}")
 
-            # Check for duplicates (unless force flag is set)
-            if not force:
-                existing = await self.sheets_repo.find_event_registration(data.email)
-                if existing:
-                    logger.info(
-                        f"Duplicate event registration detected for: {data.email}")
-                    return EventRegistrationResponse(
-                        success=False,
-                        message="An event registration already exists for this email",
-                        duplicate=True,
-                        existingEntry={
-                            "name": existing.get('Name'),
-                            "eventNames": existing.get('Event Names'),
-                            "teamName": existing.get('Team Name')
-                        }
-                    )
+            # Check for duplicates - block if email already registered
+            existing = await self.sheets_repo.find_event_registration(data.email)
+            if existing:
+                logger.info(
+                    f"Email already registered for events: {data.email}")
+                return EventRegistrationResponse(
+                    success=False,
+                    message="This email is already registered for events",
+                    duplicate=True,
+                    existingEntry={
+                        "name": existing.get('Name'),
+                        "eventNames": existing.get('Event Names'),
+                        "teamName": existing.get('Team Name')
+                    }
+                )
 
             # Prepare entry with automatic field population
             entry = self._prepare_entry(data, volunteer_email)

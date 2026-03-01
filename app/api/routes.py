@@ -96,8 +96,7 @@ async def add_accommodation(
 
     result = await accommodation_service.create_accommodation(
         data=accom_req,
-        volunteer_email=volunteer_email,
-        force=accom_req.force
+        volunteer_email=volunteer_email
     )
 
     return result
@@ -155,8 +154,7 @@ async def register_event(
 
     result = await event_service.create_event_registration(
         data=event_req,
-        volunteer_email=volunteer_email,
-        force=event_req.force
+        volunteer_email=volunteer_email
     )
 
     return result
@@ -178,8 +176,7 @@ async def register_workshop(
 
     result = await workshop_service.create_workshop_registration(
         data=workshop_req,
-        volunteer_email=volunteer_email,
-        force=workshop_req.force
+        volunteer_email=volunteer_email
     )
 
     return result
