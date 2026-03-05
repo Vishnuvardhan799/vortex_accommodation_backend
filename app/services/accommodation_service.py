@@ -83,6 +83,7 @@ class AccommodationService:
                 "fromDate": data.fromDate,
                 "toDate": data.toDate,
                 "accommodationType": data.accommodationType,
+                "paymentStatus": data.paymentStatus,
                 "notes": data.notes
             }
             self.validator.validate_accommodation_data(data_dict)
@@ -160,6 +161,7 @@ class AccommodationService:
             fromDate=data.fromDate,
             toDate=data.toDate,
             accommodationType=data.accommodationType,
+            paymentStatus=data.paymentStatus,
             notes=data.notes,
             enteredBy=volunteer_email
         )

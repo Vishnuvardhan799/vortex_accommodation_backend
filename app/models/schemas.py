@@ -29,6 +29,8 @@ class AccommodationEntry(BaseModel):
     fromDate: str = Field(pattern=r'^2026-03-(06|07|08)$')
     toDate: str = Field(pattern=r'^2026-03-(07|08)$')
     accommodationType: Literal['Boys', 'Girls', 'Other']
+    paymentStatus: Literal['Paid', 'Pending',
+                           'Waived'] = Field(default='Pending')
     notes: Optional[str] = Field(default=None, max_length=500)
     enteredBy: str  # Volunteer email
 
@@ -56,6 +58,7 @@ class AccommodationEntry(BaseModel):
                 "fromDate": "2026-03-06",
                 "toDate": "2026-03-08",
                 "accommodationType": "Boys",
+                "paymentStatus": "Paid",
                 "notes": "Late arrival",
                 "enteredBy": "volunteer@example.com"
             }
@@ -221,6 +224,8 @@ class AccommodationRequest(BaseModel):
     fromDate: str = Field(pattern=r'^2026-03-(06|07|08)$')
     toDate: str = Field(pattern=r'^2026-03-(07|08)$')
     accommodationType: Literal['Boys', 'Girls', 'Other']
+    paymentStatus: Literal['Paid', 'Pending',
+                           'Waived'] = Field(default='Pending')
     notes: Optional[str] = Field(default=None, max_length=500)
     force: bool = Field(default=False)
 
@@ -247,6 +252,7 @@ class AccommodationRequest(BaseModel):
                 "fromDate": "2026-03-06",
                 "toDate": "2026-03-08",
                 "accommodationType": "Boys",
+                "paymentStatus": "Paid",
                 "notes": "Late arrival",
                 "force": False
             }
@@ -280,6 +286,7 @@ class AccommodationResponse(BaseModel):
                         "fromDate": "2026-03-06",
                         "toDate": "2026-03-08",
                         "accommodationType": "Boys",
+                        "paymentStatus": "Paid",
                         "notes": "Late arrival",
                         "enteredBy": "volunteer@example.com"
                     },

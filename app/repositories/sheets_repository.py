@@ -384,7 +384,7 @@ class SheetsRepository:
         """
         Convert AccommodationEntry to sheet row format.
 
-        Row: [Timestamp, Name, Email, Phone, College, From Date, To Date, Type, Notes, Entered By]
+        Row: [Timestamp, Name, Email, Phone, College, From Date, To Date, Type, Payment Status, Notes, Entered By]
         """
         return [
             entry.timestamp.isoformat(),
@@ -395,6 +395,7 @@ class SheetsRepository:
             entry.fromDate,
             entry.toDate,
             entry.accommodationType,
+            entry.paymentStatus,
             entry.notes or "",
             entry.enteredBy
         ]
