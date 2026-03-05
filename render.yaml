@@ -28,7 +28,7 @@ services:
       - key: ALLOWED_ORIGINS
         sync: false # Set in Render dashboard (e.g., https://your-frontend.vercel.app)
       - key: REGISTRATION_DATA_PATH
-        value: data/sample_registration_data.json
+        value: data/registration_data.json
       - key: ENVIRONMENT
         value: production
       - key: LOG_LEVEL
