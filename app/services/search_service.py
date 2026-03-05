@@ -147,6 +147,7 @@ class SearchService:
         participant = ParticipantData(
             name=reg_data.name,
             email=reg_data.email,
+            phone=reg_data.phone,
             college=reg_data.college,
             events=reg_data.events,
             workshops=reg_data.workshops,

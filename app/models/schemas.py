@@ -75,6 +75,7 @@ class RegistrationData(BaseModel):
     """
     name: str
     email: EmailStr
+    phone: Optional[str] = None
     college: str
     events: List[str] = Field(default_factory=list)
     workshops: List[str] = Field(default_factory=list)
@@ -144,6 +145,7 @@ class ParticipantData(BaseModel):
     """
     name: str
     email: str
+    phone: Optional[str] = None
     college: str
     events: List[str] = Field(default_factory=list)
     workshops: List[str] = Field(default_factory=list)
