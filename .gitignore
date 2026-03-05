@@ -50,10 +50,15 @@ htmlcov/
 .DS_Store
 Thumbs.db
 
-# Data files (if sensitive)
+# Data files
 data/*.json
+!data/registration_data.json
 !data/sample_registration_data.json
 credentials/*.json
+
+# Excel files (too large for git)
+data/*.xlsx
+data/*.xls
 
 # Type checking
 .mypy_cache/
