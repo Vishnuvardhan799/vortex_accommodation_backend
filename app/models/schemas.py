@@ -26,7 +26,7 @@ class AccommodationEntry(BaseModel):
     phone: str = Field(min_length=10, max_length=15,
                        pattern=r'^\+?[0-9\s\-\(\)]+$')
     college: str = Field(min_length=1, max_length=200)
-    fromDate: str = Field(pattern=r'^2026-03-(06|07|08)$')
+    fromDate: str = Field(pattern=r'^2026-03-(06|07)$')
     toDate: str = Field(pattern=r'^2026-03-(07|08)$')
     accommodationType: Literal['Boys', 'Girls', 'Other']
     paymentStatus: Literal['Paid', 'Pending',
@@ -223,7 +223,7 @@ class AccommodationRequest(BaseModel):
     phone: str = Field(min_length=10, max_length=15,
                        pattern=r'^\+?[0-9\s\-\(\)]+$')
     college: str = Field(min_length=1, max_length=200)
-    fromDate: str = Field(pattern=r'^2026-03-(06|07|08)$')
+    fromDate: str = Field(pattern=r'^2026-03-(06|07)$')
     toDate: str = Field(pattern=r'^2026-03-(07|08)$')
     accommodationType: Literal['Boys', 'Girls', 'Other']
     paymentStatus: Literal['Paid', 'Pending',
