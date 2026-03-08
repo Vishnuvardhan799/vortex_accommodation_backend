@@ -94,7 +94,8 @@
       "LINKED",
       "NUMPY",
       "Vortex Main Quizbits",
-      "WEBBED"
+      "WEBBED",
+      "BIS"
     ],
     "city": ""
   },
@@ -1747,7 +1748,9 @@
     "gender": "Male",
     "summer_internship": "No",
     "workshops": [],
-    "events": [],
+    "events": [
+      "BIS"
+    ],
     "city": ""
   },
   {
@@ -3446,7 +3449,9 @@
     "gender": "Male",
     "summer_internship": "No",
     "workshops": [],
-    "events": [],
+    "events": [
+      "BIS"
+    ],
     "city": ""
   },
   {
@@ -7916,7 +7921,9 @@
     "workshops": [
       "Security of AI Agents and AI Red Teaming"
     ],
-    "events": [],
+    "events": [
+      "BIS"
+    ],
     "city": ""
   },
   {
@@ -8620,7 +8627,7 @@
   },
   {
     "id": 626,
-    "name": "ᴠɪꜱʜɴᴜᴠᴀʀᴛʜᴀɴ .ɴ",
+    "name": "\u1d20\u026a\ua731\u029c\u0274\u1d1c\u1d20\u1d00\u0280\u1d1b\u029c\u1d00\u0274 .\u0274",
     "email": "vishnuvarthannagarajan@gmail.com",
     "phone": "8122553483",
     "college": "M.A.M College Of Engineering, Siruganur Trichy.",
@@ -10307,7 +10314,7 @@
   },
   {
     "id": 750,
-    "name": "ROGITH PRAຮANNAA",
+    "name": "ROGITH PRA\u0eaeANNAA",
     "email": "rogithprasannav8e2019.2020@gmail.com",
     "phone": "8438512848",
     "college": "Saranathan college of Engineering",
@@ -16094,7 +16101,9 @@
     "gender": "Female",
     "summer_internship": "No",
     "workshops": [],
-    "events": [],
+    "events": [
+      "Code Combat"
+    ],
     "city": ""
   },
   {
@@ -16681,7 +16690,8 @@
     "events": [
       "LINKED",
       "NUMPY",
-      "Vortex Main Quizbits"
+      "Vortex Main Quizbits",
+      "BIS"
     ],
     "city": ""
   },
@@ -21953,7 +21963,9 @@
     "workshops": [
       "Cyber Security and Ethical Hacking"
     ],
-    "events": [],
+    "events": [
+      "Code Combat"
+    ],
     "city": ""
   },
   {
@@ -22832,7 +22844,9 @@
     "workshops": [
       "Quantum Computing Using IBM Qiskit"
     ],
-    "events": [],
+    "events": [
+      "Code Combat"
+    ],
     "city": ""
   },
   {
@@ -24588,7 +24602,9 @@
     "workshops": [
       "Quantum Computing Using IBM Qiskit"
     ],
-    "events": [],
+    "events": [
+      "Code Combat"
+    ],
     "city": ""
   },
   {
@@ -24673,7 +24689,8 @@
       "Web Development - English"
     ],
     "events": [
-      "NUMPY"
+      "NUMPY",
+      "BIS"
     ],
     "city": ""
   },
@@ -24940,7 +24957,10 @@
     "workshops": [
       "Cyber Security and Ethical Hacking"
     ],
-    "events": [],
+    "events": [
+      "Code Combat",
+      "BIS"
+    ],
     "city": ""
   },
   {
@@ -31178,7 +31198,9 @@
     "workshops": [
       "Cyber Security and Ethical Hacking"
     ],
-    "events": [],
+    "events": [
+      "Code Combat"
+    ],
     "city": ""
   },
   {
@@ -36003,7 +36025,7 @@
   },
   {
     "id": 2568,
-    "name": "ᴀɢɴɪꜱʜ νєтяι",
+    "name": "\u1d00\u0262\u0274\u026a\ua731\u029c \u03bd\u0454\u0442\u044f\u03b9",
     "email": "lalgudivetrivetri@gmail.com",
     "phone": "7094805385",
     "college": "Indra ganesan college of engineering",
@@ -38906,7 +38928,8 @@
     "events": [
       "Code Combat x GeeksforGeeks (Free!!)",
       "DEBUG THE CODE",
-      "WHAT THE FIGMA (WTF!)"
+      "WHAT THE FIGMA (WTF!)",
+      "BIS"
     ],
     "city": ""
   },
@@ -43341,7 +43364,9 @@
     "gender": "Female",
     "summer_internship": "No",
     "workshops": [],
-    "events": [],
+    "events": [
+      "Code Combat"
+    ],
     "city": ""
   },
   {
@@ -43384,7 +43409,9 @@
     "workshops": [
       "Web Development - Tamil"
     ],
-    "events": [],
+    "events": [
+      "Code Combat"
+    ],
     "city": ""
   },
   {
@@ -43929,7 +43956,10 @@
     "workshops": [
       "Cyber Security and Ethical Hacking"
     ],
-    "events": [],
+    "events": [
+      "Code Combat",
+      "BIS"
+    ],
     "city": ""
   },
   {
@@ -45947,7 +45977,9 @@
     "gender": "Female",
     "summer_internship": "No",
     "workshops": [],
-    "events": [],
+    "events": [
+      "Code Combat"
+    ],
     "city": ""
   },
   {
@@ -47151,7 +47183,7 @@
   },
   {
     "id": 3356,
-    "name": "힘찬Him-chan",
+    "name": "\ud798\ucc2cHim-chan",
     "email": "himchanhimchan753@gmail.com",
     "phone": "8124916216",
     "college": "Acharya college of engineering technology",
@@ -52461,5 +52493,359 @@
     "events": [],
     "city": "",
     "id": 3731
+  },
+  {
+    "id": 3732,
+    "name": "Nt Obito",
+    "email": "oontguruvaran@gmail.com",
+    "phone": "6380683579",
+    "college": "Saranathan college of Engineering Trichy",
+    "year": null,
+    "gender": null,
+    "summer_internship": "No",
+    "workshops": [],
+    "events": [],
+    "city": ""
+  },
+  {
+    "id": 3733,
+    "name": "Keerthana.Aarul",
+    "email": "keerthana2007@gmail.com",
+    "phone": "6380441868",
+    "college": "Dhanalakshmi Srinivasan university , Trichy",
+    "year": null,
+    "gender": null,
+    "summer_internship": "No",
+    "workshops": [],
+    "events": [],
+    "city": ""
+  },
+  {
+    "id": 3734,
+    "name": "MOUNESHA . S",
+    "email": "ks.kmounesha@gmail.com",
+    "phone": "8695456677",
+    "college": "SRM TRP ENGINEERING COLLEGE",
+    "year": null,
+    "gender": null,
+    "summer_internship": "No",
+    "workshops": [],
+    "events": [],
+    "city": ""
+  },
+  {
+    "id": 3735,
+    "name": "Harini",
+    "email": "harinimurali@gmail.com",
+    "phone": "8015971499",
+    "college": "Anjalai ammal Mahalingam engineering college",
+    "year": null,
+    "gender": null,
+    "summer_internship": "No",
+    "workshops": [],
+    "events": [],
+    "city": ""
+  },
+  {
+    "id": 3736,
+    "name": "Dana Darthy",
+    "email": "112danadarthy@gmail.com",
+    "phone": "9659058367",
+    "college": "SRM INSTITUTE OF SCIENCE AND TECHNOLOGY",
+    "year": null,
+    "gender": null,
+    "summer_internship": "No",
+    "workshops": [],
+    "events": [],
+    "city": ""
+  },
+  {
+    "id": 3737,
+    "name": "Balachandar R",
+    "email": "balachandar.rv205@gmail.com",
+    "phone": "8903196625",
+    "college": "Anjalai ammal mahalingam engineering college",
+    "year": null,
+    "gender": null,
+    "summer_internship": "No",
+    "workshops": [],
+    "events": [],
+    "city": ""
+  },
+  {
+    "id": 3738,
+    "name": "Anshu Prasad Sarraf",
+    "email": "satuwasarraf850@gmail.com",
+    "phone": "7569096514",
+    "college": "SRM UNIVERSITY",
+    "year": null,
+    "gender": null,
+    "summer_internship": "No",
+    "workshops": [],
+    "events": [],
+    "city": ""
+  },
+  {
+    "id": 3739,
+    "name": "Jehojacsy J",
+    "email": "jehojacsy36@gmail.com",
+    "phone": "8807836948",
+    "college": "PSGR KRISHNAMMAL COLLEGE FOR WOMEN",
+    "year": null,
+    "gender": null,
+    "summer_internship": "No",
+    "workshops": [],
+    "events": [],
+    "city": ""
+  },
+  {
+    "id": 3740,
+    "name": "SNIRMAL KUMAR K",
+    "email": "24z464@psgtech.ac.in",
+    "phone": "9500575064",
+    "college": "PSG College Of Technology",
+    "year": null,
+    "gender": null,
+    "summer_internship": "No",
+    "workshops": [],
+    "events": [],
+    "city": ""
+  },
+  {
+    "id": 3741,
+    "name": "Hari Haran",
+    "email": "s.hariharansss21@gmail.com",
+    "phone": "6374361791",
+    "college": "Anjalai Ammal Mahalingam Engineering College",
+    "year": null,
+    "gender": null,
+    "summer_internship": "No",
+    "workshops": [],
+    "events": [],
+    "city": ""
+  },
+  {
+    "id": 3742,
+    "name": "NITHISH KUMAR SARAVANAN",
+    "email": "nithishkumarsaravanan8@gmail.com",
+    "phone": "8015413019",
+    "college": "Saranathan college of engineering",
+    "year": null,
+    "gender": null,
+    "summer_internship": "No",
+    "workshops": [],
+    "events": [
+      "Code Combat"
+    ],
+    "city": ""
+  },
+  {
+    "id": 3743,
+    "name": "Hirthik Balaji C",
+    "email": "hirthikbalaji2006@gmail.com",
+    "phone": "8248827972",
+    "college": "Amrita vishwa vidhyapeetham",
+    "year": null,
+    "gender": null,
+    "summer_internship": "No",
+    "workshops": [],
+    "events": [
+      "Code Combat"
+    ],
+    "city": ""
+  },
+  {
+    "id": 3744,
+    "name": "JAWAHAR K",
+    "email": "jawahark.ec24@krct.ac.in",
+    "phone": "8939801248",
+    "college": "K.Ramakrishnan collage of technology",
+    "year": null,
+    "gender": null,
+    "summer_internship": "No",
+    "workshops": [],
+    "events": [
+      "Code Combat"
+    ],
+    "city": ""
+  },
+  {
+    "id": 3745,
+    "name": "Tejaswini S",
+    "email": "stejaswini329@gmail.com",
+    "phone": "7204322400",
+    "college": "SRM INSTITUTE OF SCIENCE AND TECHNOLOGY",
+    "year": null,
+    "gender": null,
+    "summer_internship": "No",
+    "workshops": [],
+    "events": [
+      "Code Combat"
+    ],
+    "city": ""
+  },
+  {
+    "id": 3746,
+    "name": "Vaishnavi",
+    "email": "vaishnavi070908@gmail.com",
+    "phone": "8438046623",
+    "college": "Dhanalakshmi Srinivasan University-samayapuran",
+    "year": null,
+    "gender": null,
+    "summer_internship": "No",
+    "workshops": [],
+    "events": [
+      "Code Combat"
+    ],
+    "city": ""
+  },
+  {
+    "id": 3747,
+    "name": "DICSON MOSES D",
+    "email": "dicsonmoses02@gmail.com",
+    "phone": "9751956315",
+    "college": "K.RAMAKRISHNAN COLLEGE OF TECHNOLOGY",
+    "year": null,
+    "gender": null,
+    "summer_internship": "No",
+    "workshops": [],
+    "events": [
+      "Code Combat"
+    ],
+    "city": ""
+  },
+  {
+    "id": 3748,
+    "name": "Venkat ramana",
+    "email": "venkatramana06062008@gmail.com",
+    "phone": "9100095069",
+    "college": "nit trichy",
+    "year": null,
+    "gender": null,
+    "summer_internship": "No",
+    "workshops": [],
+    "events": [
+      "Code Combat"
+    ],
+    "city": ""
+  },
+  {
+    "id": 3749,
+    "name": "Rohak",
+    "email": "rohakedagotti@gmail.com",
+    "phone": "8074981784",
+    "college": "Nit Trichy",
+    "year": null,
+    "gender": null,
+    "summer_internship": "No",
+    "workshops": [],
+    "events": [
+      "Code Combat"
+    ],
+    "city": ""
+  },
+  {
+    "id": 3750,
+    "name": "Sanket Yadav",
+    "email": "sanketyadav2411@gmail.com",
+    "phone": "9309285903",
+    "college": "NIT Trichy",
+    "year": null,
+    "gender": null,
+    "summer_internship": "No",
+    "workshops": [],
+    "events": [
+      "Code Combat"
+    ],
+    "city": ""
+  },
+  {
+    "id": 3751,
+    "name": "Mohammed Aasif",
+    "email": "aasifibrahim04@gmail.com",
+    "phone": "7305948488",
+    "college": "National Institute of Technology Tiruchirapalli",
+    "year": null,
+    "gender": null,
+    "summer_internship": "No",
+    "workshops": [],
+    "events": [
+      "Code Combat",
+      "BIS"
+    ],
+    "city": ""
+  },
+  {
+    "id": 3752,
+    "name": "Sudharshini",
+    "email": "sudharshini22102007@gmail.com",
+    "phone": "8754235645",
+    "college": "Srm University",
+    "year": null,
+    "gender": null,
+    "summer_internship": "No",
+    "workshops": [],
+    "events": [],
+    "city": ""
+  },
+  {
+    "id": 3753,
+    "name": "Ragipalyam Ananda Swaroop",
+    "email": "anandaswaroop2005@gmail.com",
+    "phone": "8815774884",
+    "college": "NITT",
+    "year": null,
+    "gender": null,
+    "summer_internship": "No",
+    "workshops": [],
+    "events": [
+      "BIS"
+    ],
+    "city": ""
+  },
+  {
+    "id": 3754,
+    "name": "Prateek Yadav",
+    "email": "prateek.ydv.nitt@gmail.com",
+    "phone": "9938360804",
+    "college": "NIT TRICHY",
+    "year": null,
+    "gender": null,
+    "summer_internship": "No",
+    "workshops": [],
+    "events": [
+      "BIS"
+    ],
+    "city": ""
+  },
+  {
+    "id": 3755,
+    "name": "Abhishek Kumar",
+    "email": "ak62002190@gmail.com",
+    "phone": "8252409305",
+    "college": "NIT Tiruchirappalli",
+    "year": null,
+    "gender": null,
+    "summer_internship": "No",
+    "workshops": [],
+    "events": [
+      "BIS"
+    ],
+    "city": ""
+  },
+  {
+    "id": 3756,
+    "name": "Kumari Sneha",
+    "email": "kumarisneha0905@gmail.com",
+    "phone": "8544237626",
+    "college": "NIT Trichy",
+    "year": null,
+    "gender": null,
+    "summer_internship": "No",
+    "workshops": [],
+    "events": [
+      "BIS"
+    ],
+    "city": ""
   }
 ]
