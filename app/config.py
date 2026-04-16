@@ -7,7 +7,13 @@ Validates: Requirements 10.1, 10.2, 10.3, 10.4
 import os
 import json
 import logging
+from pathlib import Path
 from typing import Optional
+from dotenv import load_dotenv
+
+# Load .env from the project root (one level up from app/)
+_env_path = Path(__file__).resolve().parent.parent / ".env"
+load_dotenv(_env_path)
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +44,8 @@ class Config:
             "REGISTRATION_DATA_PATH": "Path to registration data JSON file",
             "ACCOMMODATION_SHEET_ID": "Google Sheet ID for accommodation data",
             "EVENTS_SHEET_ID": "Google Sheet ID for events registration",
-            "WORKSHOPS_SHEET_ID": "Google Sheet ID for workshops registration"
+            "WORKSHOPS_SHEET_ID": "Google Sheet ID for workshops registration",
+            "VALEDICTION_SHEET_ID": "Google Sheet ID for valediction token tracking"
         }
 
         missing_vars = []
@@ -67,6 +74,7 @@ class Config:
         self.accommodation_sheet_id = os.getenv("ACCOMMODATION_SHEET_ID")
         self.events_sheet_id = os.getenv("EVENTS_SHEET_ID")
         self.workshops_sheet_id = os.getenv("WORKSHOPS_SHEET_ID")
+        self.valediction_sheet_id = os.getenv("VALEDICTION_SHEET_ID")
 
         # Validate Google credentials JSON format
         try:
@@ -118,6 +126,7 @@ class Config:
             f"  - Accommodation Sheet ID: {self.accommodation_sheet_id}")
         logger.info(f"  - Events Sheet ID: {self.events_sheet_id}")
         logger.info(f"  - Workshops Sheet ID: {self.workshops_sheet_id}")
+        logger.info(f"  - Valediction Sheet ID: {self.valediction_sheet_id}")
         logger.info(f"  - Registration Data: {self.registration_data_path}")
         logger.info(f"  - Allowed Origins: {', '.join(self.allowed_origins)}")
 

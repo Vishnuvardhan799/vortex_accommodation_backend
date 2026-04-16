@@ -23,7 +23,7 @@ from app.models import AccommodationEntry
 
 logger = logging.getLogger(__name__)
 
-SheetType = Literal['accommodation', 'events', 'workshops']
+SheetType = Literal['accommodation', 'events', 'workshops', 'valediction']
 
 
 class SheetsAPIError(Exception):
@@ -57,7 +57,8 @@ class SheetsRepository:
         credentials_path: Optional[str] = None,
         accommodation_sheet_id: Optional[str] = None,
         events_sheet_id: Optional[str] = None,
-        workshops_sheet_id: Optional[str] = None
+        workshops_sheet_id: Optional[str] = None,
+        valediction_sheet_id: Optional[str] = None
     ):
         """
         Initialize SheetsRepository with Google Sheets credentials.
@@ -67,6 +68,7 @@ class SheetsRepository:
             accommodation_sheet_id: ID of the accommodation Google Sheet
             events_sheet_id: ID of the events Google Sheet
             workshops_sheet_id: ID of the workshops Google Sheet
+            valediction_sheet_id: ID of the valediction Google Sheet
 
         Raises:
             ValueError: If required environment variables are missing
@@ -80,6 +82,8 @@ class SheetsRepository:
         self.events_sheet_id = events_sheet_id or os.getenv("EVENTS_SHEET_ID")
         self.workshops_sheet_id = workshops_sheet_id or os.getenv(
             "WORKSHOPS_SHEET_ID")
+        self.valediction_sheet_id = valediction_sheet_id or os.getenv(
+            "VALEDICTION_SHEET_ID")
 
         if not self.credentials_path:
             raise ValueError(
@@ -91,6 +95,9 @@ class SheetsRepository:
             raise ValueError("EVENTS_SHEET_ID environment variable not set")
         if not self.workshops_sheet_id:
             raise ValueError("WORKSHOPS_SHEET_ID environment variable not set")
+        if not self.valediction_sheet_id:
+            raise ValueError(
+                "VALEDICTION_SHEET_ID environment variable not set")
 
         # Initialize client (with connection pooling)
         self.client = self._get_or_create_client()
@@ -103,12 +110,14 @@ class SheetsRepository:
         self._caches: Dict[SheetType, Optional[list]] = {
             'accommodation': None,
             'events': None,
-            'workshops': None
+            'workshops': None,
+            'valediction': None
         }
         self._cache_timestamps: Dict[SheetType, Optional[float]] = {
             'accommodation': None,
             'events': None,
-            'workshops': None
+            'workshops': None,
+            'valediction': None
         }
         self._cache_ttl: int = 60  # 60 seconds TTL
 
@@ -122,7 +131,8 @@ class SheetsRepository:
         sheet_configs = {
             'accommodation': self.accommodation_sheet_id,
             'events': self.events_sheet_id,
-            'workshops': self.workshops_sheet_id
+            'workshops': self.workshops_sheet_id,
+            'valediction': self.valediction_sheet_id
         }
 
         for sheet_type, sheet_id in sheet_configs.items():
@@ -443,6 +453,156 @@ class SheetsRepository:
             entry['enteredBy']
         ]
 
+    async def find_valediction_by_roll(self, roll_number: str) -> Optional[Dict[str, Any]]:
+        """
+        Find valediction participant by roll number.
+
+        Args:
+            roll_number: 9-digit roll number to search for
+
+        Returns:
+            Optional[Dict[str, Any]]: Participant record if found, None otherwise
+        """
+        if self._is_cache_stale('valediction'):
+            self._refresh_cache('valediction')
+
+        cache = self._caches['valediction']
+        for record in cache:
+            # Match against 'Roll Number' column (handle both str and int)
+            sheet_roll = str(record.get('Roll Number', '')).strip()
+            if sheet_roll == roll_number.strip():
+                logger.debug(
+                    f"Found valediction entry for roll: {roll_number}")
+                return record
+
+        logger.debug(f"No valediction entry found for roll: {roll_number}")
+        return None
+
+    async def mark_valediction_token(self, roll_number: str, given_by: str) -> bool:
+        """
+        Mark a valediction token as given in the Google Sheet.
+
+        Finds the row by roll number and updates the 'Token Given', 'Given By',
+        and 'Given At' columns. Auto-creates these columns if they don't exist.
+
+        Args:
+            roll_number: 9-digit roll number
+            given_by: Volunteer identifier who gave the token
+
+        Returns:
+            True if successfully updated
+
+        Raises:
+            SheetsAPIError: If updating the sheet fails
+        """
+        try:
+            sheet = self.sheets['valediction']
+            all_values = sheet.get_all_values()
+
+            if not all_values:
+                raise SheetsAPIError("mark_token", Exception("Sheet is empty"))
+
+            headers = all_values[0]
+            header_lower = [h.strip().lower() for h in headers]
+
+            # Find Roll Number column
+            roll_col = None
+            for idx, h in enumerate(header_lower):
+                if h == 'roll number':
+                    roll_col = idx
+                    break
+
+            if roll_col is None:
+                raise SheetsAPIError("mark_token", Exception(
+                    "'Roll Number' column not found"))
+
+            # Find or create Token Given, Given By, Given At columns
+            token_col = None
+            given_by_col = None
+            given_at_col = None
+
+            for idx, h in enumerate(header_lower):
+                if h == 'token given':
+                    token_col = idx
+                elif h == 'given by':
+                    given_by_col = idx
+                elif h == 'given at':
+                    given_at_col = idx
+
+            # Add missing columns as new headers
+            next_col = len(headers)
+            new_headers = []
+            if token_col is None:
+                token_col = next_col
+                new_headers.append((next_col, 'Token Given'))
+                next_col += 1
+            if given_by_col is None:
+                given_by_col = next_col
+                new_headers.append((next_col, 'Given By'))
+                next_col += 1
+            if given_at_col is None:
+                given_at_col = next_col
+                new_headers.append((next_col, 'Given At'))
+                next_col += 1
+
+            for col_idx, header_name in new_headers:
+                cell = gspread.utils.rowcol_to_a1(1, col_idx + 1)
+                sheet.update(cell, [[header_name]])
+
+            # Find the row with matching roll number
+            target_row = None
+            for row_idx, row in enumerate(all_values[1:], start=2):
+                if len(row) > roll_col and str(row[roll_col]).strip() == roll_number.strip():
+                    target_row = row_idx
+                    break
+
+            if target_row is None:
+                raise SheetsAPIError("mark_token", Exception(
+                    f"Roll number {roll_number} not found"))
+
+            # Update the cells
+            timestamp = datetime.utcnow().isoformat()
+
+            token_cell = gspread.utils.rowcol_to_a1(target_row, token_col + 1)
+            sheet.update(token_cell, [['Yes']])
+
+            given_by_cell = gspread.utils.rowcol_to_a1(
+                target_row, given_by_col + 1)
+            sheet.update(given_by_cell, [[given_by]])
+
+            given_at_cell = gspread.utils.rowcol_to_a1(
+                target_row, given_at_col + 1)
+            sheet.update(given_at_cell, [[timestamp]])
+
+            # Highlight the entire row for this participant in green
+            green_format = {
+                "backgroundColor": {
+                    "red": 0.85,
+                    "green": 0.95,
+                    "blue": 0.85,
+                }
+            }
+            last_col_letter = gspread.utils.rowcol_to_a1(
+                1, len(headers)).rstrip('0123456789')
+            row_range = f"A{target_row}:{last_col_letter}{target_row}"
+            sheet.format(row_range, green_format)
+
+            # Invalidate cache
+            self._caches['valediction'] = None
+            self._cache_timestamps['valediction'] = None
+
+            logger.info(f"Successfully marked token for roll: {roll_number}")
+            return True
+
+        except APIError as e:
+            logger.error(f"Google Sheets API error while marking token: {e}")
+            raise SheetsAPIError("mark_token", e)
+        except SheetsAPIError:
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error while marking token: {e}")
+            raise SheetsAPIError("mark_token", e)
+
     def verify_connection(self) -> bool:
         """
         Verify connection to all Google Sheets.
@@ -466,3 +626,50 @@ class SheetsRepository:
             bool: True if connection is successful
         """
         return self.verify_connection()
+
+    # --- Valediction Search Counters (row 420-422, below 415 data entries) ---
+    COUNTER_ROW_EXISTING = 420
+    COUNTER_ROW_NON_EXISTING = 421
+    COUNTER_ROW_DUPLICATE = 422
+
+    async def _ensure_search_counters(self) -> None:
+        """Set up counter labels and initial values if not already present."""
+        sheet = self.sheets['valediction']
+        label_cell = f"A{self.COUNTER_ROW_EXISTING}"
+        current = sheet.acell(label_cell).value
+        if current == "Existing Searches":
+            return  # already set up
+
+        sheet.update(label_cell, [["Existing Searches"]])
+        sheet.update(f"B{self.COUNTER_ROW_EXISTING}", [[0]])
+        sheet.update(f"A{self.COUNTER_ROW_NON_EXISTING}",
+                     [["Non-Existing Searches"]])
+        sheet.update(f"B{self.COUNTER_ROW_NON_EXISTING}", [[0]])
+        sheet.update(f"A{self.COUNTER_ROW_DUPLICATE}",
+                     [["Duplicate Searches (Token Already Given)"]])
+        sheet.update(f"B{self.COUNTER_ROW_DUPLICATE}", [[0]])
+
+        # Bold the labels
+        bold_fmt = {"textFormat": {"bold": True}}
+        sheet.format(
+            f"A{self.COUNTER_ROW_EXISTING}:A{self.COUNTER_ROW_DUPLICATE}", bold_fmt)
+        logger.info("Initialized valediction search counters")
+
+    async def increment_search_counter(self, found: bool, duplicate: bool = False) -> None:
+        """Increment the existing, non-existing, or duplicate search counter by 1."""
+        try:
+            await self._ensure_search_counters()
+            sheet = self.sheets['valediction']
+            if duplicate:
+                row = self.COUNTER_ROW_DUPLICATE
+            elif found:
+                row = self.COUNTER_ROW_EXISTING
+            else:
+                row = self.COUNTER_ROW_NON_EXISTING
+            cell = f"B{row}"
+            current = sheet.acell(cell).value
+            count = int(current) if current and current.isdigit() else 0
+            sheet.update(cell, [[count + 1]])
+        except Exception as e:
+            # Don't let counter failures break the search flow
+            logger.warning(f"Failed to update search counter: {e}")

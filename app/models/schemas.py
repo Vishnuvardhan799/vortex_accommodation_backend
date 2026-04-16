@@ -433,3 +433,77 @@ class WorkshopRegistrationResponse(BaseModel):
             }
         }
     }
+
+
+# --- Valediction Token Models ---
+
+class ValedictionSearchRequest(BaseModel):
+    """
+    Model for valediction participant search by roll number.
+    """
+    rollNumber: str = Field(min_length=9, max_length=9, pattern=r'^\d{9}$')
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "rollNumber": "123456789"
+            }
+        }
+    }
+
+
+class ValedictionParticipant(BaseModel):
+    """
+    Model representing a valediction participant from the Google Sheet.
+    Columns: Timestamp, Email Address, Name, Roll Number, Gender, Year,
+    Preferred Food choice, Do you plan to attend..., Token Given, Given By, Given At
+    """
+    rollNumber: str
+    name: str
+    email: Optional[str] = None
+    gender: Optional[str] = None
+    year: Optional[str] = None
+    foodPreference: Optional[str] = None
+    tokenGiven: bool = False
+    givenBy: Optional[str] = None
+    givenAt: Optional[str] = None
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "rollNumber": "106123012",
+                "name": "Srikar N",
+                "email": "srikar@gmail.com",
+                "gender": "Male",
+                "year": "3rd",
+                "foodPreference": "Veg",
+                "tokenGiven": False
+            }
+        }
+    }
+
+
+class ValedictionSearchResponse(BaseModel):
+    """
+    Model for valediction search responses.
+    """
+    found: bool
+    participant: Optional[ValedictionParticipant] = None
+    message: Optional[str] = None
+
+
+class ValedictionMarkTokenRequest(BaseModel):
+    """
+    Model for marking a valediction token as given.
+    """
+    rollNumber: str = Field(min_length=9, max_length=9, pattern=r'^\d{9}$')
+
+
+class ValedictionMarkTokenResponse(BaseModel):
+    """
+    Model for valediction mark token responses.
+    """
+    success: bool
+    message: str
+    alreadyGiven: bool = False
+    participant: Optional[ValedictionParticipant] = None

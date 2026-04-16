@@ -4,21 +4,24 @@ Vortex 2026 Accommodation & Registration Check System - Main Application
 This module initializes the FastAPI application and configures middleware.
 """
 
-from app.api.routes import router as api_router
-from fastapi import FastAPI, Request, status
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import JSONResponse
-from fastapi.exceptions import RequestValidationError
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
+from app.config import validate_config, get_config
+from app.exceptions import DuplicateEntryError, SheetsAPIError, ValidationError
 from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, Request, status
+from app.api.routes import router as api_router
 import os
 import logging
 from dotenv import load_dotenv
 
-from app.exceptions import DuplicateEntryError, SheetsAPIError, ValidationError
-from app.config import validate_config, get_config
+# Load environment variables BEFORE any app imports that read config
+load_dotenv()
+
 
 # Configure logging
 logging.basicConfig(
@@ -26,9 +29,6 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
-
-# Load environment variables
-load_dotenv()
 
 # Validate configuration at startup
 # Validates: Requirements 10.4

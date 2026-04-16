@@ -14,6 +14,11 @@ from .schemas import (
     RegistrationData,
     SearchRequest,
     SearchResponse,
+    ValedictionSearchRequest,
+    ValedictionSearchResponse,
+    ValedictionParticipant,
+    ValedictionMarkTokenRequest,
+    ValedictionMarkTokenResponse,
 )
 
 __all__ = [
@@ -26,4 +31,9 @@ __all__ = [
     "RegistrationData",
     "SearchRequest",
     "SearchResponse",
+    "ValedictionSearchRequest",
+    "ValedictionSearchResponse",
+    "ValedictionParticipant",
+    "ValedictionMarkTokenRequest",
+    "ValedictionMarkTokenResponse",
 ]

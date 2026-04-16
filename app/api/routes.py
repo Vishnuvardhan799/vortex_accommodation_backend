@@ -20,13 +20,18 @@ from app.models.schemas import (
     EventRegistrationResponse,
     WorkshopRegistrationRequest,
     WorkshopRegistrationResponse,
-    HealthResponse
+    HealthResponse,
+    ValedictionSearchRequest,
+    ValedictionSearchResponse,
+    ValedictionMarkTokenRequest,
+    ValedictionMarkTokenResponse,
 )
 from app.middleware import verify_token
 from app.services.search_service import SearchService
 from app.services.accommodation_service import AccommodationService
 from app.services.event_service import EventService
 from app.services.workshop_service import WorkshopService
+from app.services.valediction_service import ValedictionService
 from app.repositories.registration_repository import RegistrationRepository
 from app.repositories.sheets_repository import SheetsRepository
 from app.services.validation_service import ValidationService
@@ -47,7 +52,8 @@ sheets_repo = SheetsRepository(
     credentials_path=config.google_credentials_json,
     accommodation_sheet_id=config.accommodation_sheet_id,
     events_sheet_id=config.events_sheet_id,
-    workshops_sheet_id=config.workshops_sheet_id
+    workshops_sheet_id=config.workshops_sheet_id,
+    valediction_sheet_id=config.valediction_sheet_id
 )
 
 # Initialize services
@@ -56,6 +62,7 @@ search_service = SearchService(registration_repo, sheets_repo)
 accommodation_service = AccommodationService(sheets_repo, validation_service)
 event_service = EventService(sheets_repo, validation_service)
 workshop_service = WorkshopService(sheets_repo, validation_service)
+valediction_service = ValedictionService(sheets_repo)
 
 
 @router.post("/search", response_model=SearchResponse)
@@ -188,4 +195,50 @@ async def register_workshop(
 
     # Return 409 for duplicates, 201 for success
     response.status_code = 409 if result.duplicate else 201
+    return result
+
+
+# --- Valediction Token Endpoints ---
+
+@router.post("/valediction/search", response_model=ValedictionSearchResponse)
+@limiter.limit("30/minute")
+async def search_valediction(
+    request: Request,
+    search_req: ValedictionSearchRequest,
+    token: str = Depends(verify_token)
+):
+    """
+    Search for valediction participant by 9-digit roll number.
+
+    Rate limit: 30 requests per minute per IP
+    """
+    result = await valediction_service.search_by_roll(search_req.rollNumber)
+    return result
+
+
+@router.post("/valediction/mark-token", response_model=ValedictionMarkTokenResponse)
+@limiter.limit("20/minute")
+async def mark_valediction_token(
+    request: Request,
+    response: Response,
+    mark_req: ValedictionMarkTokenRequest,
+    token: str = Depends(verify_token)
+):
+    """
+    Mark a valediction token as given for a participant.
+
+    Rate limit: 20 requests per minute per IP
+    """
+    volunteer_email = "volunteer@vortex2026.com"
+
+    result = await valediction_service.mark_token_given(
+        roll_number=mark_req.rollNumber,
+        volunteer=volunteer_email
+    )
+
+    if result.alreadyGiven:
+        response.status_code = 409
+    elif not result.success:
+        response.status_code = 404
+
     return result

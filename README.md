@@ -9,6 +9,9 @@ A lightweight, high-performance API for managing participant registration and ac
 - Fast participant search by email (sub-second response)
 - Real-time accommodation management via Google Sheets
 - Event and workshop registration tracking
+- Valediction token tracking with roll number search
+  - Search counters (existing, non-existing, duplicate) auto-tracked in Google Sheet
+  - Row highlighting in green when token is marked as given
 - Duplicate detection with confirmation workflow
 - Rate limiting (100 requests/minute per IP)
 - API key authentication
@@ -103,6 +106,9 @@ backend/
 │   ├── services/               # Business logic layer
 │   │   ├── search_service.py
 │   │   ├── accommodation_service.py
+│   │   ├── event_service.py
+│   │   ├── workshop_service.py
+│   │   ├── valediction_service.py
 │   │   └── validation_service.py
 │   └── repositories/           # Data access layer
 │       ├── registration_repository.py
@@ -122,15 +128,17 @@ backend/
 
 ## API Endpoints
 
-| Method | Endpoint                    | Description                    | Auth Required |
-| ------ | --------------------------- | ------------------------------ | ------------- |
-| GET    | `/api/health`               | Health check                   | No            |
-| GET    | `/api/search`               | Search participant by email    | Yes           |
-| POST   | `/api/accommodation`        | Add accommodation entry        | Yes           |
-| POST   | `/api/accommodation/verify` | Verify duplicate accommodation | Yes           |
-| POST   | `/api/events/register`      | Register for event/workshop    | Yes           |
+| Method | Endpoint                      | Description                       | Auth Required |
+| ------ | ----------------------------- | --------------------------------- | ------------- |
+| GET    | `/api/health`                 | Health check                      | No            |
+| POST   | `/api/search`                 | Search participant by email       | Yes           |
+| POST   | `/api/accommodation`          | Add accommodation entry           | Yes           |
+| POST   | `/api/events/register`        | Register for events               | Yes           |
+| POST   | `/api/workshops/register`     | Register for workshops            | Yes           |
+| POST   | `/api/valediction/search`     | Search valediction by roll number | Yes           |
+| POST   | `/api/valediction/mark-token` | Mark valediction token as given   | Yes           |
 
-All authenticated endpoints require `X-API-Key` header.
+All authenticated endpoints require a Bearer token in the Authorization header.
 
 ## Testing
 
@@ -187,10 +195,13 @@ mypy app/
 | Variable                  | Description                            | Required | Default     |
 | ------------------------- | -------------------------------------- | -------- | ----------- |
 | `GOOGLE_CREDENTIALS_JSON` | Google service account credentials     | Yes      | -           |
-| `SHEET_NAME`              | Name of the accommodation Google Sheet | Yes      | -           |
 | `API_SECRET_KEY`          | Secret key for API authentication      | Yes      | -           |
 | `ALLOWED_ORIGINS`         | CORS allowed origins (comma-separated) | Yes      | -           |
 | `REGISTRATION_DATA_PATH`  | Path to registration data JSON         | Yes      | -           |
+| `ACCOMMODATION_SHEET_ID`  | Google Sheet ID for accommodation      | Yes      | -           |
+| `EVENTS_SHEET_ID`         | Google Sheet ID for events             | Yes      | -           |
+| `WORKSHOPS_SHEET_ID`      | Google Sheet ID for workshops          | Yes      | -           |
+| `VALEDICTION_SHEET_ID`    | Google Sheet ID for valediction        | Yes      | -           |
 | `ENVIRONMENT`             | Environment (development/production)   | No       | development |
 | `LOG_LEVEL`               | Logging level                          | No       | INFO        |
 
